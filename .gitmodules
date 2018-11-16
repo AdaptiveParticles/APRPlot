@@ -1,0 +1,6 @@
+[submodule "LibAPR"]
+	path = LibAPR
+	url = https://github.com/cheesema/LibAPR.git
+[submodule "libboard"]
+	path = libboard
+	url = git@github.com:c-koi/libboard.git
