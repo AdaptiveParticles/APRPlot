@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
-project(APR_time)
+project(APRPlot)
 
 set(CMAKE_CXX_STANDARD 14)
-
 
 # APR
 set(APR_TESTS OFF CACHE BOOL "" FORCE)
