@@ -20,6 +20,8 @@ set(APR_LIB staticLib)
 include_directories(LibAPR)
 include_directories(LibAPR/src)
 include_directories(LibAPR/build)
+include_directories(libboard)
+include_directories(libboard/include)
 INCLUDE_DIRECTORIES(${CMAKE_BUILD_FILES_DIRECTORY}/LibAPR)
 
 
@@ -62,8 +64,8 @@ SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include_directories(LibAPR/external/c-blosc/blosc)
 INCLUDE_DIRECTORIES(${CMAKE_BUILD_FILES_DIRECTORY}/LibAPR/external/c-blosc/blosc)
 
-#APRBenchMarks
+#APRPlots
 
-add_executable(MovingBlobs examples/Example_moving_blobs.cpp)
-target_link_libraries(MovingBlobs  ${APR_LIB} ${GTEST_LIBRARIES} ${HDF5_LIBRARIES} ${TIFF_LIBRARIES} ${ArrayFire_OpenCL_LIBRARIES} ${OpenCL_LIBRARIES} ${BLOSC_LIBRARIES})
+add_executable(PlotAPRDots Figures/create_slice_eps.cpp)
+target_link_libraries(PlotAPRDots  ${APR_LIB} ${GTEST_LIBRARIES} ${HDF5_LIBRARIES} ${TIFF_LIBRARIES} ${ArrayFire_OpenCL_LIBRARIES} ${OpenCL_LIBRARIES} ${BLOSC_LIBRARIES} board )
 

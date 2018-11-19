@@ -11,9 +11,7 @@
 #include <fstream>
 #include <ctime>
 
-#include "../../src/data_structures/Tree/PartCellStructure.hpp"
-#include "../../src/data_structures/Tree/ExtraPartCellData.hpp"
-#include "../../src/data_structures/Tree/PartCellParent.hpp"
+#include "src/data_structures/APR/APR.hpp"
 
 using namespace LibBoard;
 using namespace std;
@@ -906,120 +904,121 @@ struct ParticlesFull{
 
 };
 
-ParticlesFull get_full_parts_slice(PartCellStructure<float,uint64_t>& pc_struct,unsigned int z_slice){
+template<typename T>
+ParticlesFull get_full_parts_slice(APR<T>& apr,unsigned int z_slice){
 
 
     //containers for all the variables
 
     ParticlesFull parts;
-
-    parts.depth_max = pc_struct.depth_max;
-    parts.depth_min = pc_struct.depth_min;
-
-    int num_cells = pc_struct.get_number_cells();
-    int num_parts = pc_struct.get_number_parts();
-
-    uint8_t k,type;
-    uint16_t x_c;
-    uint16_t y_c;
-    uint16_t z_c;
-    uint16_t Ip;
-
-
-    //initialize
-    uint64_t node_val_part;
-    uint64_t y_coord;
-    int x_;
-    int z_;
-
-    uint64_t j_;
-    uint64_t status;
-    uint64_t curr_key=0;
-    uint64_t part_offset=0;
-
-    uint64_t p;
-
-    uint64_t counter = 0;
-
-
-    for(uint64_t i = pc_struct.pc_data.depth_min;i <= pc_struct.pc_data.depth_max;i++){
-
-        const unsigned int x_num_ = pc_struct.pc_data.x_num[i];
-        const unsigned int z_num_ = pc_struct.pc_data.z_num[i];
-
-        for(z_ = 0;z_ < z_num_;z_++){
-
-            curr_key = 0;
-
-            pc_struct.part_data.access_data.pc_key_set_depth(curr_key,i);
-            pc_struct.part_data.access_data.pc_key_set_z(curr_key,z_);
-
-            for(x_ = 0;x_ < x_num_;x_++){
-
-                pc_struct.part_data.access_data.pc_key_set_x(curr_key,x_);
-                const size_t offset_pc_data = x_num_*z_ + x_;
-
-                const size_t j_num = pc_struct.pc_data.data[i][offset_pc_data].size();
-
-                y_coord = 0;
-
-                for(j_ = 0;j_ < j_num;j_++){
-
-
-                    node_val_part = pc_struct.part_data.access_data.data[i][offset_pc_data][j_];
-
-                    if (!(node_val_part&1)){
-                        //get the index gap node
-                        y_coord++;
-
-                        pc_struct.part_data.access_data.pc_key_set_j(curr_key,j_);
-
-                        //neigh_keys.resize(0);
-                        status = pc_struct.part_data.access_node_get_status(node_val_part);
-                        part_offset = pc_struct.part_data.access_node_get_part_offset(node_val_part);
-
-                        pc_struct.part_data.access_data.pc_key_set_status(curr_key,status);
-
-                        //loop over the particles
-                        for(p = 0;p < pc_struct.part_data.get_num_parts(status);p++){
-                            pc_struct.part_data.access_data.pc_key_set_index(curr_key,part_offset+p);
-                            pc_struct.part_data.access_data.pc_key_set_partnum(curr_key,p);
-
-                            uint64_t x,z,y,depth,status;
-
-                            pc_struct.part_data.access_data.get_coordinates_part(y_coord,curr_key,x,z,y,depth,status);
-
-                            int k_factor = pow(2,pc_struct.depth_max + 1 - depth);
-
-                            if(z == z_slice/k_factor){
-
-                                //set the cooridnates info
-                                pc_struct.part_data.access_data.get_coordinates_part_full(y_coord,curr_key,x_c,z_c,y_c,k,type);
-
-                                //get the intensity
-                                parts.Ip.push_back(pc_struct.part_data.get_part(curr_key));
-                                parts.k_vec.push_back(k);
-                                parts.type_vec.push_back(type);
-                                parts.x_c.push_back(x_c);
-                                parts.y_c.push_back(y_c);
-                                parts.z_c.push_back(z_c);
-
-                            }
-
-                        }
-
-                    } else {
-
-                        y_coord += ((node_val_part & COORD_DIFF_MASK_PARTICLE) >> COORD_DIFF_SHIFT_PARTICLE);
-                        y_coord--;
-                    }
-
-                }
-
-            }
-
-        }
-    }
+//
+//    parts.depth_max = pc_struct.depth_max;
+//    parts.depth_min = pc_struct.depth_min;
+//
+//    int num_cells = pc_struct.get_number_cells();
+//    int num_parts = pc_struct.get_number_parts();
+//
+//    uint8_t k,type;
+//    uint16_t x_c;
+//    uint16_t y_c;
+//    uint16_t z_c;
+//    uint16_t Ip;
+//
+//
+//    //initialize
+//    uint64_t node_val_part;
+//    uint64_t y_coord;
+//    int x_;
+//    int z_;
+//
+//    uint64_t j_;
+//    uint64_t status;
+//    uint64_t curr_key=0;
+//    uint64_t part_offset=0;
+//
+//    uint64_t p;
+//
+//    uint64_t counter = 0;
+//
+//
+//    for(uint64_t i = pc_struct.pc_data.depth_min;i <= pc_struct.pc_data.depth_max;i++){
+//
+//        const unsigned int x_num_ = pc_struct.pc_data.x_num[i];
+//        const unsigned int z_num_ = pc_struct.pc_data.z_num[i];
+//
+//        for(z_ = 0;z_ < z_num_;z_++){
+//
+//            curr_key = 0;
+//
+//            pc_struct.part_data.access_data.pc_key_set_depth(curr_key,i);
+//            pc_struct.part_data.access_data.pc_key_set_z(curr_key,z_);
+//
+//            for(x_ = 0;x_ < x_num_;x_++){
+//
+//                pc_struct.part_data.access_data.pc_key_set_x(curr_key,x_);
+//                const size_t offset_pc_data = x_num_*z_ + x_;
+//
+//                const size_t j_num = pc_struct.pc_data.data[i][offset_pc_data].size();
+//
+//                y_coord = 0;
+//
+//                for(j_ = 0;j_ < j_num;j_++){
+//
+//
+//                    node_val_part = pc_struct.part_data.access_data.data[i][offset_pc_data][j_];
+//
+//                    if (!(node_val_part&1)){
+//                        //get the index gap node
+//                        y_coord++;
+//
+//                        pc_struct.part_data.access_data.pc_key_set_j(curr_key,j_);
+//
+//                        //neigh_keys.resize(0);
+//                        status = pc_struct.part_data.access_node_get_status(node_val_part);
+//                        part_offset = pc_struct.part_data.access_node_get_part_offset(node_val_part);
+//
+//                        pc_struct.part_data.access_data.pc_key_set_status(curr_key,status);
+//
+//                        //loop over the particles
+//                        for(p = 0;p < pc_struct.part_data.get_num_parts(status);p++){
+//                            pc_struct.part_data.access_data.pc_key_set_index(curr_key,part_offset+p);
+//                            pc_struct.part_data.access_data.pc_key_set_partnum(curr_key,p);
+//
+//                            uint64_t x,z,y,depth,status;
+//
+//                            pc_struct.part_data.access_data.get_coordinates_part(y_coord,curr_key,x,z,y,depth,status);
+//
+//                            int k_factor = pow(2,pc_struct.depth_max + 1 - depth);
+//
+//                            if(z == z_slice/k_factor){
+//
+//                                //set the cooridnates info
+//                                pc_struct.part_data.access_data.get_coordinates_part_full(y_coord,curr_key,x_c,z_c,y_c,k,type);
+//
+//                                //get the intensity
+//                                parts.Ip.push_back(pc_struct.part_data.get_part(curr_key));
+//                                parts.k_vec.push_back(k);
+//                                parts.type_vec.push_back(type);
+//                                parts.x_c.push_back(x_c);
+//                                parts.y_c.push_back(y_c);
+//                                parts.z_c.push_back(z_c);
+//
+//                            }
+//
+//                        }
+//
+//                    } else {
+//
+//                        y_coord += ((node_val_part & COORD_DIFF_MASK_PARTICLE) >> COORD_DIFF_SHIFT_PARTICLE);
+//                        y_coord--;
+//                    }
+//
+//                }
+//
+//            }
+//
+//        }
+//    }
 
     return parts;
 
@@ -1072,6 +1071,56 @@ void create_part_eps(ParticlesFull& parts_slice,std::string save_loc,std::string
     std::cout << " done parts to eps" << std::endl;
 
 }
+
+template<typename T,typename R>
+void create_apr_eps(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string save_loc,std::string name,unsigned int z = 0){
+    // creates an eps with the part locations adjusted for size
+
+
+    std::vector<float> crange = {0,4};
+
+    Board board;
+    board.setLineWidth(0.25);
+
+    auto apr_iterator = apr.iterator();
+
+    double col[3];
+    Group g;
+
+    for (unsigned int level = apr_iterator.level_min(); level <= apr_iterator.level_max(); ++level) {
+        int x = 0;
+
+        for (x = 0; x < apr_iterator.spatial_index_x_max(level); ++x) {
+            for (apr_iterator.set_new_lzx(level, z, x); apr_iterator.global_index() < apr_iterator.end_index;
+                 apr_iterator.set_iterator_to_particle_next_particle()) {
+
+                ParulaColorMix(col,parts_data[apr_iterator],crange[0],crange[1]);
+
+                double size = 5*apr.level_max()*apr.level_min()/((float)pow(1.5,level));
+
+                g << Circle( apr_iterator.y_nearest_pixel(), -apr_iterator.x_nearest_pixel(),size , Color::Null, Color(col[0],col[1],col[2]),0.1 );
+            }
+        }
+    }
+
+    board << g;
+
+    std::string file_name;
+
+    file_name =save_loc + name + "_parts_type.eps";
+    board.saveEPS( file_name.c_str(), Board::A4 );
+    file_name =save_loc + name + ".fig";
+    board.saveFIG( file_name.c_str(), Board::A4 );
+
+    board.scaleToWidth(25,Board::UseLineWidth);
+    file_name =save_loc + name + ".svg";
+    board.saveSVG( file_name.c_str(), Board::BoundingBox,0.0, Board::UCentimeter );
+
+    std::cout << " done type to eps" << std::endl;
+
+}
+
+
 
 void create_part_eps_type(ParticlesFull& parts_slice,std::string save_loc,std::string name){
     // creates an eps with the part locations adjusted for size

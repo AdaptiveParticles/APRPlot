@@ -8,16 +8,10 @@
 #include <algorithm>
 #include <iostream>
 
-#include "../../src/data_structures/meshclass.h"
-#include "../../src/io/readimage.h"
+#include "src/data_structures/Mesh/PixelData.hpp"
+#include "src/io/TiffUtils.hpp"
 
-#include "../../src/data_structures/particle_map.hpp"
-#include "../../src/data_structures/Tree/PartCellStructure.hpp"
-#include "../../src/data_structures/Tree/ParticleDataNew.hpp"
-#include "../../src/algorithm/level.hpp"
-#include "../../src/io/writeimage.h"
-#include "../../src/io/write_parts.h"
-#include "../../src/io/partcell_io.h"
+#include "src/data_structures/APR/APR.hpp"
 
 #include <cstdlib>
 #include <ctime>
@@ -26,7 +20,7 @@
 #include <cmath>
 #include <vector>
 #include <utility>
-#include "Board.h"
+#include "include/Board.h"
 #include <sstream>
 #include <string>
 
