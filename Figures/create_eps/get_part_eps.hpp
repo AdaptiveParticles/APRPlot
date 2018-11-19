@@ -1077,7 +1077,7 @@ void create_apr_eps(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string sav
     // creates an eps with the part locations adjusted for size
 
 
-    std::vector<float> crange = {0,4};
+    std::vector<float> crange = {0,256};
 
     Board board;
     board.setLineWidth(0.25);
@@ -1086,6 +1086,8 @@ void create_apr_eps(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string sav
 
     double col[3];
     Group g;
+
+    uint64_t counter = 0;
 
     for (unsigned int level = apr_iterator.level_min(); level <= apr_iterator.level_max(); ++level) {
         int x = 0;
@@ -1096,12 +1098,31 @@ void create_apr_eps(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string sav
 
                 ParulaColorMix(col,parts_data[apr_iterator],crange[0],crange[1]);
 
-                double size = 5*apr.level_max()*apr.level_min()/((float)pow(1.5,level));
+                double size = (1 + (apr.level_max()-level))*0.5;
+                //size = 1;
 
-                g << Circle( apr_iterator.y_nearest_pixel(), -apr_iterator.x_nearest_pixel(),size , Color::Null, Color(col[0],col[1],col[2]),0.1 );
+
+
+                //if(level==(apr.level_max())) {
+
+                    counter++;
+
+                    //if(counter < 15000) {
+
+
+                        float y_ =  apr_iterator.y_nearest_pixel()+1;
+                        float x_ =  apr_iterator.x_nearest_pixel()+1;
+
+                        g << Circle(y_, -x_, size, Color::Null,
+                                    Color(col[0], col[1], col[2]), 0.1);
+                    //}
+              //  }
+
             }
         }
     }
+
+    std::cout << counter << std::endl;
 
     board << g;
 
