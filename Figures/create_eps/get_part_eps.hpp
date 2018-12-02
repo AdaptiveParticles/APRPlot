@@ -873,6 +873,8 @@ void ParulaColorMix(double* color, double x, double min, double max,bool invert 
     index = std::max((float) index,(float)min);
     index = floor(255*(index - min)/max);
 
+    //index = x;
+
     if(invert){
         color[0] = 256 * (col_1[255-index]);
         color[1] = 256 * (col_2[255-index]);
@@ -1077,7 +1079,7 @@ void create_apr_eps(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string sav
     // creates an eps with the part locations adjusted for size
 
 
-    std::vector<float> crange = {0,256};
+    std::vector<float> crange = {0, 255};
 
     Board board;
     board.setLineWidth(0.25);
@@ -1096,33 +1098,38 @@ void create_apr_eps(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string sav
             for (apr_iterator.set_new_lzx(level, z, x); apr_iterator.global_index() < apr_iterator.end_index;
                  apr_iterator.set_iterator_to_particle_next_particle()) {
 
-                ParulaColorMix(col,parts_data[apr_iterator],crange[0],crange[1]);
+                ParulaColorMix(col,parts_data[apr_iterator]*255,crange[0],crange[1]);
 
                 double size = (1 + (apr.level_max()-level))*0.5;
                 //size = 1;
 
-
+                float val = parts_data[apr_iterator] * 255;
 
                 //if(level==(apr.level_max())) {
 
                     counter++;
 
                     //if(counter < 15000) {
+                float y_, x_;
 
+                if(level==apr.level_max()) {
+                    y_ = apr_iterator.y() + 1.5;
+                    x_ = apr_iterator.x() + 1.5;
+                } else {
+                    y_ = apr_iterator.y_global() + 1;
+                    x_ = apr_iterator.x_global() + 1;
+                }
 
-                        float y_ =  apr_iterator.y_nearest_pixel()+1;
-                        float x_ =  apr_iterator.x_nearest_pixel()+1;
-
-                        g << Circle(y_, -x_, size, Color::Null,
-                                    Color(col[0], col[1], col[2]), 0.1);
-                    //}
-              //  }
+                g << Circle(y_, -x_, size, Color::Null,
+                            Color(col[0], col[1], col[2]), 0.1);
 
             }
         }
     }
 
     std::cout << counter << std::endl;
+
+    std::cout << apr_iterator.total_number_particles() << std::endl;
 
     board << g;
 
