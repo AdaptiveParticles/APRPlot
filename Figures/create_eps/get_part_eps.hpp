@@ -1095,15 +1095,25 @@ void create_apr_eps(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string sav
         int x = 0;
 
         for (x = 0; x < apr_iterator.spatial_index_x_max(level); ++x) {
-            for (apr_iterator.set_new_lzx(level, z, x); apr_iterator.global_index() < apr_iterator.end_index;
+            for (apr_iterator.set_new_lzx(level, z, x);
+                 apr_iterator.global_index() < apr_iterator.end_index;
                  apr_iterator.set_iterator_to_particle_next_particle()) {
 
-                ParulaColorMix(col,parts_data[apr_iterator]*255,crange[0],crange[1]);
+                ParulaColorMix(col,parts_data[apr_iterator],crange[0],crange[1]);
 
-                double size = (1 + (apr.level_max()-level))*0.5;
+                double size;
+                if(level == apr.level_max()) {
+                    size = 0.5;
+                } else {
+                    size = 0.5 + (apr.level_max()-level)*0.3;
+                }
+
+                //double size = (1 + (apr.level_max()-level))*0.4;
                 //size = 1;
 
-                float val = parts_data[apr_iterator] * 255;
+                //float val = parts_data[apr_iterator] * 255;
+
+                std::cout << "value: " << parts_data[apr_iterator.global_index()] << std::endl;
 
                 //if(level==(apr.level_max())) {
 
@@ -1148,6 +1158,97 @@ void create_apr_eps(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string sav
 
 }
 
+
+template<typename T,typename R>
+void create_apr_eps_color(APR<T>& apr,ExtraParticleData<R>& parts_data,std::string save_loc,std::string name,std::string image,unsigned int z = 0){
+    // creates an eps with the part locations adjusted for size, with colors sampled from the original image
+
+    TiffUtils::TiffInfo inputTiff(save_loc + image);
+
+    PixelData<uint8_t> mesh(inputTiff.iImgHeight, inputTiff.iImgWidth, inputTiff.iNumberOfDirectories);
+    TiffUtils::getMesh<uint8_t>(inputTiff, mesh);
+
+    std::cout << "mesh size: " << mesh.x_num << ", " << mesh.y_num << ", " << mesh.z_num << std::endl;
+
+    Board board;
+    board.setLineWidth(0.25);
+
+    auto apr_iterator = apr.iterator();
+
+    double col[3];
+    Group g;
+
+    uint64_t counter = 0;
+
+    for (unsigned int level = apr_iterator.level_min(); level <= apr_iterator.level_max(); ++level) {
+        int x = 0;
+
+        for (x = 0; x < apr_iterator.spatial_index_x_max(level); ++x) {
+            for (apr_iterator.set_new_lzx(level, z, x);
+                 apr_iterator.global_index() < apr_iterator.end_index;
+                 apr_iterator.set_iterator_to_particle_next_particle()) {
+
+                int ix, iy;
+                ix = apr_iterator.x_nearest_pixel();
+                iy = apr_iterator.y_nearest_pixel();
+
+                if(ix < mesh.x_num && iy < mesh.y_num) {
+
+                    //ParulaColorMix(col,parts_data[apr_iterator],crange[0],crange[1]);
+                    col[0] = mesh.at(iy, ix, 0);
+                    col[1] = mesh.at(iy, ix, 1);
+                    col[2] = mesh.at(iy, ix, 2);
+
+                    double size;
+                    if (level == apr.level_max()) {
+                        size = 0.5;
+                    } else {
+                        size = 0.5 + (apr.level_max() - level) * 0.3;
+                    }
+
+
+                    counter++;
+
+                    //if(counter < 15000) {
+                    float y_, x_;
+
+                    if (level == apr.level_max()) {
+                        y_ = apr_iterator.y() + 1.5;
+                        x_ = apr_iterator.x() + 1.5;
+                    } else {
+                        y_ = apr_iterator.y_global() + 1;
+                        x_ = apr_iterator.x_global() + 1;
+                    }
+
+                    g << Circle(y_, -x_, size, Color::Null,
+                                Color(col[0], col[1], col[2]), 0.1);
+
+                }
+
+            }
+        }
+    }
+
+    std::cout << counter << std::endl;
+
+    std::cout << apr_iterator.total_number_particles() << std::endl;
+
+    board << g;
+
+    std::string file_name;
+
+    file_name =save_loc + name + "_parts_type.eps";
+    board.saveEPS( file_name.c_str(), Board::A4 );
+    file_name =save_loc + name + ".fig";
+    board.saveFIG( file_name.c_str(), Board::A4 );
+
+    board.scaleToWidth(25,Board::UseLineWidth);
+    file_name =save_loc + name + ".svg";
+    board.saveSVG( file_name.c_str(), Board::BoundingBox,0.0, Board::UCentimeter );
+
+    std::cout << " done type to eps" << std::endl;
+
+}
 
 
 void create_part_eps_type(ParticlesFull& parts_slice,std::string save_loc,std::string name){
